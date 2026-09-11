@@ -1,0 +1,58 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+.workflow-data/
+# eve build artifacts. `.eve/` is written at the repo root (the generated Vercel service) and inside
+# each agent root (the dev host and compiled bundles); `.output/` is what a standalone `eve build`
+# emits. `eve dev` also auto-installs the local sandbox backend into the agent root, writing a
+# `package.json` and a `node_modules/` there — generated, not authored.
+.eve/
+.output/
+agents/*/node_modules/
+agents/*/package.json
+.env*.local
+.clerk/
+.claude/
+/.swc
+
+# keep the template
+!.env.example

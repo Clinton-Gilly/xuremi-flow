@@ -1,0 +1,407 @@
+@import "@xyflow/react/dist/style.css" layer(base);
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  /* Literal families: next/font emits @font-face with the real family name
+     ("Geist" / "Geist Fallback"); `--font-sans: var(--font-sans)` was circular. */
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+
+  /*
+   * One visible focus ring for everything the keyboard can reach. Components that style their own
+   * (`focus-visible:ring-*` from shadcn) win on specificity; this is the floor, so a link, a
+   * `<kbd>`-adjacent control or a React Flow button is never focused invisibly on the dark theme.
+   */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
+
+/*
+ * React Flow's own chrome, in the app's tokens.
+ *
+ * The library ships light-mode defaults (white buttons, a white minimap) that survive
+ * `colorMode="system"` because they are plain CSS rather than variables. Restating them here keeps
+ * the zoom controls and the minimap legible on the dark canvas — and keeps the fit-view button,
+ * which is the one control people actually reach for, from disappearing into the background.
+ */
+/*
+ * The pane, the wires and the node text, on the app's own tokens.
+ *
+ * React Flow ships a light and a dark palette of its own and switches between them by putting
+ * `light`/`dark` on its wrapper. `dark` is also the class this app redefines every token under, so
+ * whichever palette it picks must agree with the header's theme toggle — `Canvas` passes
+ * `colorMode` from next-themes for that. These rules are the second half: every surface it paints
+ * comes from a variable that exists in both `:root` and `.dark`, so neither theme can leave a
+ * black pane or white-on-white text behind.
+ */
+.react-flow,
+.react-flow__pane {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.react-flow__node {
+  color: var(--card-foreground);
+}
+
+.react-flow__controls {
+  @apply overflow-hidden rounded-lg border border-border;
+  background-color: var(--card);
+  box-shadow: none;
+  margin: 0.75rem;
+}
+
+.react-flow__controls-button {
+  @apply border-0 border-b border-border transition-colors;
+  background-color: var(--card);
+  color: var(--muted-foreground);
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
+
+.react-flow__controls-button:last-child {
+  @apply border-b-0;
+}
+
+.react-flow__controls-button:hover {
+  @apply bg-muted text-foreground;
+}
+
+.react-flow__controls-button:focus-visible {
+  @apply outline-2 -outline-offset-2 outline-ring;
+}
+
+/*
+ * The minimap sits in the bottom-right of the canvas column. Its own `<svg>` carries React Flow's
+ * light-mode `background-color` inline, so the background is overridden here as well as the frame.
+ */
+.react-flow__minimap {
+  @apply rounded-lg border border-border;
+  background-color: var(--card);
+  margin: 0.75rem;
+}
+
+.react-flow__minimap-svg {
+  background-color: var(--card);
+}
+
+.react-flow__minimap-node {
+  fill: var(--muted-foreground);
+  stroke: none;
+}
+
+/* The window you are actually looking at, cut out of a wash of the page's own background. */
+.react-flow__minimap-mask {
+  fill: var(--background);
+  fill-opacity: 0.65;
+}
+
+/*
+ * Gone under 900px, where the settings panel overlays the right-hand side of the canvas: a map of
+ * a graph you cannot see is worse than no map, and it would sit under the panel it duplicates.
+ */
+@media (max-width: 899px) {
+  .pf-canvas-minimap {
+    display: none;
+  }
+}
+
+/*
+ * The dots the canvas is ruled with. React Flow paints them with a hard-coded light-mode colour on
+ * the `<circle>` itself, so this restates them as a token — one grid weight, both themes.
+ */
+.react-flow__background circle {
+  fill: var(--border);
+}
+
+/* A connection point reads as a target on hover rather than only when you are already on it. */
+.react-flow__handle {
+  @apply transition-colors;
+}
+
+.react-flow__handle:hover,
+.react-flow__node:hover .react-flow__handle {
+  @apply bg-primary;
+}
+
+/*
+ * …and on a touch screen it has to be big enough to hit. The dot itself stays 10px — growing it
+ * would move every wire's endpoint and change how a node reads — so the *target* is grown instead:
+ * a transparent square, at least 12 × 12, centred on the handle. A pseudo-element takes no part in
+ * layout, so React Flow still measures the handle it always did and nothing on the card moves.
+ */
+@media (pointer: coarse) {
+  .react-flow__handle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    min-width: 12px;
+    min-height: 12px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.react-flow__attribution {
+  @apply bg-transparent text-muted-foreground/60;
+}
+
+/*
+ * A live run's wires (`edge-run-state.ts`) animate with React Flow's own dashed-stroke `animated`
+ * edge flag. The OS-level motion preference turns the moving dashes off; the tone underneath — the
+ * colour that says a wire is actually carrying the run right now — is a separate Tailwind class on
+ * the same `<path>` and is untouched by this rule, so "what happened" still reads at a glance.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .react-flow__edge.animated path {
+    animation: none;
+  }
+}
+/*
+ * Markdown from the Builder agent, scoped to `.pf-chat-md` so none of it reaches the rest of the
+ * app: `MessageMarkdown` is the only thing that wears the class, and every rule below is a
+ * descendant of it. Sizes are tuned for the ~400px chat panel — headings barely larger than body
+ * text, tight vertical rhythm — and every colour is an app token, so the dark theme follows.
+ */
+.pf-chat-md {
+  @apply text-sm leading-relaxed wrap-break-word;
+}
+
+.pf-chat-md > :first-child {
+  @apply mt-0;
+}
+
+.pf-chat-md > :last-child {
+  @apply mb-0;
+}
+
+.pf-chat-md p {
+  @apply my-2;
+}
+
+.pf-chat-md h1,
+.pf-chat-md h2,
+.pf-chat-md h3,
+.pf-chat-md h4,
+.pf-chat-md h5,
+.pf-chat-md h6 {
+  @apply mt-3 mb-1 font-semibold text-foreground;
+}
+
+.pf-chat-md h1 {
+  @apply text-base;
+}
+
+.pf-chat-md h2,
+.pf-chat-md h3,
+.pf-chat-md h4,
+.pf-chat-md h5,
+.pf-chat-md h6 {
+  @apply text-sm;
+}
+
+.pf-chat-md ul {
+  @apply my-2 list-disc space-y-1 ps-5;
+}
+
+.pf-chat-md ol {
+  @apply my-2 list-decimal space-y-1 ps-5;
+}
+
+.pf-chat-md li::marker {
+  @apply text-muted-foreground;
+}
+
+.pf-chat-md li > ul,
+.pf-chat-md li > ol {
+  @apply my-1;
+}
+
+/* GFM task lists: `remark-gfm` marks these, and a checkbox reads better without a bullet too. */
+.pf-chat-md li.task-list-item {
+  @apply -ms-5 list-none;
+}
+
+.pf-chat-md li.task-list-item input[type="checkbox"] {
+  @apply me-1.5 align-[-0.1em];
+}
+
+.pf-chat-md a {
+  @apply font-medium text-foreground underline decoration-border underline-offset-2 hover:decoration-foreground;
+}
+
+.pf-chat-md blockquote {
+  @apply my-2 border-s-2 border-border ps-3 text-muted-foreground;
+}
+
+.pf-chat-md hr {
+  @apply my-3 border-border;
+}
+
+/* Inline code only: the `<code>` inside a fence is the block below, and is styled with it. */
+.pf-chat-md :not(pre) > code {
+  @apply rounded bg-muted px-1 py-0.5 font-mono text-[0.85em] text-foreground;
+}
+
+.pf-chat-md .pf-chat-md-block {
+  @apply my-2 overflow-hidden rounded-md border border-border bg-muted/50;
+}
+
+.pf-chat-md .pf-chat-md-lang {
+  @apply block border-b border-border px-2 py-1 font-mono text-[10px] tracking-wide text-muted-foreground uppercase;
+}
+
+.pf-chat-md pre {
+  @apply overflow-x-auto p-2 font-mono text-xs leading-relaxed;
+}
+
+.pf-chat-md pre code {
+  @apply bg-transparent p-0 font-mono text-xs;
+}
+
+/* A table is the one thing that will not fit 400px: scroll the table, never the panel. */
+.pf-chat-md table {
+  @apply my-2 block w-full overflow-x-auto border-collapse text-xs;
+}
+
+.pf-chat-md th,
+.pf-chat-md td {
+  @apply border border-border px-2 py-1 text-left align-top;
+}
+
+.pf-chat-md th {
+  @apply bg-muted/50 font-medium;
+}
+
+.pf-chat-md img {
+  @apply my-2 max-w-full rounded-md;
+}
