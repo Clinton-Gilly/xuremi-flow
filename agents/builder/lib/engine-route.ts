@@ -20,11 +20,32 @@ import { EngineUnavailableError } from "../../../lib/engine-env";
 
 /** Where the Next app answers. The eve service carries it as APP_ORIGIN, like every other service. */
 function appOrigin(): string {
-  const origin = (process.env.APP_ORIGIN ?? "").trim().replace(/\/+$/, "");
-  if (!origin) {
-    throw new EngineUnavailableError("builder: APP_ORIGIN is not set on this service");
+  const configured = (process.env.APP_ORIGIN ?? "").trim().replace(/\/+$/, "");
+  const isVercel = process.env.VERCEL === "1";
+
+  if (isVercel && (!configured || configured.includes("localhost") || configured.includes("papaflow"))) {
+    const vercelOrigin = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "";
+    if (vercelOrigin) return vercelOrigin.replace(/\/+$/, "");
   }
-  return origin;
+
+  if (configured) {
+    return configured;
+  }
+
+  const vercelFallback = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "";
+  if (vercelFallback) {
+    return vercelFallback.replace(/\/+$/, "");
+  }
+
+  throw new EngineUnavailableError("builder: APP_ORIGIN is not set on this service");
 }
 
 /** The shared secret the engine routes compare. Missing it is a deployment problem, not a model one. */

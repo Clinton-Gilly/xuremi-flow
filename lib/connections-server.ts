@@ -80,7 +80,17 @@ function connectorFor(provider: string): ConnectorDef {
 
 /** Where a connector's `afterCreate` should point a provider's callbacks. */
 function appOrigin(): string {
-  return process.env.APP_ORIGIN ?? "http://localhost:3000";
+  let origin = (process.env.APP_ORIGIN ?? "").trim().replace(/\/+$/, "");
+  const isVercel = process.env.VERCEL === "1";
+  if (isVercel && (!origin || origin.includes("localhost") || origin.includes("papaflow"))) {
+    const vercelOrigin = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "";
+    if (vercelOrigin) origin = vercelOrigin.replace(/\/+$/, "");
+  }
+  return origin || "http://localhost:3000";
 }
 
 /**

@@ -111,8 +111,18 @@ export async function mintEngineToken(claims: EngineTokenClaims): Promise<string
  * connectors already register with providers (`lib/connections-server.ts` reads the same variable).
  */
 export function runtimeAgentHost(): string {
-  const origin = process.env.APP_ORIGIN ?? "http://localhost:3000";
-  return `${origin.replace(/\/+$/, "")}${RUNTIME_AGENT_PATH}`;
+  let origin = (process.env.APP_ORIGIN ?? "").trim().replace(/\/+$/, "");
+  const isVercel = process.env.VERCEL === "1";
+  if (isVercel && (!origin || origin.includes("localhost") || origin.includes("papaflow"))) {
+    const vercelOrigin = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "";
+    if (vercelOrigin) origin = vercelOrigin.replace(/\/+$/, "");
+  }
+  if (!origin) origin = "http://localhost:3000";
+  return `${origin}${RUNTIME_AGENT_PATH}`;
 }
 
 /**
