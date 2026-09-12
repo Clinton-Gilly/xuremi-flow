@@ -5,8 +5,11 @@ import type { z } from "zod";
 import { openOrgConnection } from "../../../lib/connections-engine";
 import { featuresForPlan } from "../../../lib/plans";
 import { discordPostNode } from "../../../nodes/actions/discord-post";
+import { googleSheetsAppendRowNode } from "../../../nodes/actions/google-sheets-append";
+import { googleSheetsGetRowsNode } from "../../../nodes/actions/google-sheets-get";
 import { httpRequest } from "../../../nodes/actions/http-request";
 import { notionCreatePageNode } from "../../../nodes/actions/notion-create-page";
+import { postgresQueryNode } from "../../../nodes/actions/postgres-query";
 import { sendgridSendEmailNode } from "../../../nodes/actions/sendgrid-send-email";
 import { slackPostNode } from "../../../nodes/actions/slack-post";
 import { supabaseInsertNode } from "../../../nodes/actions/supabase-insert";
@@ -181,6 +184,33 @@ const TOOLS: readonly ToolSpec[] = [
     describe: (label) =>
       `Insert a new row into a table in the Supabase database "${label}". ` +
       "`table` is the target table name and `row` is the JSON object to insert.",
+  },
+  {
+    name: "google_sheets_append_row",
+    providers: ["google-sheets"],
+    node: googleSheetsAppendRowNode,
+    hidden: ["connectionId"],
+    describe: (label) =>
+      `Append a row of values to a Google Sheet via "${label}". ` +
+      "`spreadsheetId` is the ID of the sheet, `range` is the sheet/cell range, and `values` is an array of row values.",
+  },
+  {
+    name: "google_sheets_get_rows",
+    providers: ["google-sheets"],
+    node: googleSheetsGetRowsNode,
+    hidden: ["connectionId"],
+    describe: (label) =>
+      `Read rows from a Google Sheet via "${label}". ` +
+      "`spreadsheetId` is the ID of the sheet and `range` is the sheet/cell range to read.",
+  },
+  {
+    name: "postgres_query",
+    providers: ["postgres"],
+    node: postgresQueryNode,
+    hidden: ["connectionId"],
+    describe: (label) =>
+      `Execute a parameterized SQL query against the PostgreSQL database "${label}". ` +
+      "`sql` is the SQL query string and `params` is an array of parameter values.",
   },
 ];
 

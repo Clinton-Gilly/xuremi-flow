@@ -2,9 +2,12 @@ import { airtableCreateRecordNode } from "./actions/airtable-create-record";
 import { discordPostNode } from "./actions/discord-post";
 import { emailSend } from "./actions/email-send";
 import { githubCreateIssueNode } from "./actions/github-create-issue";
+import { googleSheetsAppendRowNode } from "./actions/google-sheets-append";
+import { googleSheetsGetRowsNode } from "./actions/google-sheets-get";
 import { httpRequest } from "./actions/http-request";
 import { linearCreateIssueNode } from "./actions/linear-create-issue";
 import { notionCreatePageNode } from "./actions/notion-create-page";
+import { postgresQueryNode } from "./actions/postgres-query";
 import { sendgridSendEmailNode } from "./actions/sendgrid-send-email";
 import { slackPostNode } from "./actions/slack-post";
 import { supabaseInsertNode } from "./actions/supabase-insert";
@@ -68,6 +71,9 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   linearCreateIssueNode,
   githubCreateIssueNode,
   supabaseInsertNode,
+  googleSheetsAppendRowNode,
+  googleSheetsGetRowsNode,
+  postgresQueryNode,
   httpRequest,
   emailSend,
   sendgridSendEmailNode,

@@ -8,12 +8,14 @@ import { elevenlabsConnector } from "./elevenlabs";
 import { falConnector } from "./fal";
 import { githubConnector } from "./github";
 import { googleConnector } from "./google";
+import { googleSheetsConnector } from "./google-sheets";
 import { groqConnector } from "./groq";
 import { linearConnector } from "./linear";
 import { mistralConnector } from "./mistral";
 import { notionConnector } from "./notion";
 import { openaiConnector } from "./openai";
 import { openrouterConnector } from "./openrouter";
+import { postgresConnector } from "./postgres";
 import { resendConnector } from "./resend";
 import { sendgridConnector } from "./sendgrid";
 import { slackConnector } from "./slack";
@@ -29,6 +31,7 @@ const DEFINITIONS: readonly ConnectorDef[] = [
   openaiConnector,
   anthropicConnector,
   googleConnector,
+  googleSheetsConnector,
   xaiConnector,
   mistralConnector,
   groqConnector,
@@ -50,6 +53,7 @@ const DEFINITIONS: readonly ConnectorDef[] = [
   twilioConnector,
   sendgridConnector,
   supabaseConnector,
+  postgresConnector,
 ];
 
 export function buildConnectorRegistry(definitions: readonly ConnectorDef[]): Record<string, ConnectorDef> {
