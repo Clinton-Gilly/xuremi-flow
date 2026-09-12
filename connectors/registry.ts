@@ -15,10 +15,13 @@ import { notionConnector } from "./notion";
 import { openaiConnector } from "./openai";
 import { openrouterConnector } from "./openrouter";
 import { resendConnector } from "./resend";
+import { sendgridConnector } from "./sendgrid";
 import { slackConnector } from "./slack";
 import { stripeConnector } from "./stripe";
+import { supabaseConnector } from "./supabase";
 import { teamsConnector } from "./teams";
 import { telegramConnector } from "./telegram";
+import { twilioConnector } from "./twilio";
 import { xaiConnector } from "./xai";
 
 /** Adding a provider = one file here + one line in this array. */
@@ -44,6 +47,9 @@ const DEFINITIONS: readonly ConnectorDef[] = [
   linearConnector,
   githubConnector,
   resendConnector,
+  twilioConnector,
+  sendgridConnector,
+  supabaseConnector,
 ];
 
 export function buildConnectorRegistry(definitions: readonly ConnectorDef[]): Record<string, ConnectorDef> {

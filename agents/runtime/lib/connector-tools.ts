@@ -7,8 +7,11 @@ import { featuresForPlan } from "../../../lib/plans";
 import { discordPostNode } from "../../../nodes/actions/discord-post";
 import { httpRequest } from "../../../nodes/actions/http-request";
 import { notionCreatePageNode } from "../../../nodes/actions/notion-create-page";
+import { sendgridSendEmailNode } from "../../../nodes/actions/sendgrid-send-email";
 import { slackPostNode } from "../../../nodes/actions/slack-post";
+import { supabaseInsertNode } from "../../../nodes/actions/supabase-insert";
 import { telegramSendNode } from "../../../nodes/actions/telegram-send";
+import { twilioSendSmsNode } from "../../../nodes/actions/twilio-send-sms";
 import type { NodeDef } from "../../../nodes/define";
 
 /**
@@ -151,6 +154,33 @@ const TOOLS: readonly ToolSpec[] = [
     describe: (label) =>
       `Create a page (a database row) in the Notion workspace "${label}". ` +
       "`dataSourceId` names the database's data source.",
+  },
+  {
+    name: "twilio_send_sms",
+    providers: ["twilio"],
+    node: twilioSendSmsNode,
+    hidden: ["connectionId"],
+    describe: (label) =>
+      `Send an SMS or WhatsApp message via the Twilio connection "${label}". ` +
+      "`to` is the recipient number, `from` is the sender number, and `body` is the text.",
+  },
+  {
+    name: "sendgrid_send_email",
+    providers: ["sendgrid"],
+    node: sendgridSendEmailNode,
+    hidden: ["connectionId"],
+    describe: (label) =>
+      `Send an email via the SendGrid connection "${label}". ` +
+      "`to` is recipient email, `from` is sender email, `subject` is subject, and `text`/`html` is body.",
+  },
+  {
+    name: "supabase_insert_row",
+    providers: ["supabase"],
+    node: supabaseInsertNode,
+    hidden: ["connectionId"],
+    describe: (label) =>
+      `Insert a new row into a table in the Supabase database "${label}". ` +
+      "`table` is the target table name and `row` is the JSON object to insert.",
   },
 ];
 

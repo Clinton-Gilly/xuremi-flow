@@ -53,14 +53,27 @@ function findFunctions(value: unknown, path = "$"): string[] {
 describe("connector registry", () => {
   it("keys every connector by its own unique provider (ten AI + chat, data, email, payments)", () => {
     const entries = Object.entries(CONNECTORS);
-    expect(entries).toHaveLength(21);
+    expect(entries).toHaveLength(24);
 
     const providers = entries.map(([, def]) => def.provider);
     expect(new Set(providers).size).toBe(providers.length);
     expect(providers.filter((p) => CONNECTORS[p].category === "ai").sort()).toEqual(AI_PROVIDERS);
     expect(providers).toContain("telegram");
     expect(providers).toContain("stripe");
-    for (const provider of ["slack", "discord-webhook", "discord-bot", "teams", "notion", "airtable", "linear", "github", "resend"]) {
+    for (const provider of [
+      "slack",
+      "discord-webhook",
+      "discord-bot",
+      "teams",
+      "notion",
+      "airtable",
+      "linear",
+      "github",
+      "resend",
+      "twilio",
+      "sendgrid",
+      "supabase",
+    ]) {
       expect(providers).toContain(provider);
     }
 
@@ -101,7 +114,7 @@ describe("connector registry", () => {
   it("builds a catalogue that carries no functions across the wire", () => {
     const catalogue = connectorCatalogue([]);
 
-    expect(catalogue).toHaveLength(21);
+    expect(catalogue).toHaveLength(24);
     expect(findFunctions(catalogue)).toEqual([]);
     expect(JSON.parse(JSON.stringify(catalogue))).toEqual(catalogue);
 
@@ -139,7 +152,7 @@ describe("connector registry", () => {
 
   it("dims exactly the Pro connectors for an org with no paid features", () => {
     const catalogue = connectorCatalogue([]);
-    expect(catalogue).toHaveLength(21);
+    expect(catalogue).toHaveLength(24);
 
     const blocked = catalogue.filter((entry) => !entry.allowed).map((entry) => entry.provider);
     expect(blocked.sort()).toEqual(PRO_PROVIDERS);
@@ -156,7 +169,7 @@ describe("connector registry", () => {
 
   it("allows every connector on Pro", () => {
     const catalogue = connectorCatalogue(featuresForPlan("pro"));
-    expect(catalogue).toHaveLength(21);
+    expect(catalogue).toHaveLength(24);
     for (const entry of catalogue) expect(entry.allowed).toBe(true);
   });
 

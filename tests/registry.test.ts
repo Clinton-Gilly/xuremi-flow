@@ -48,13 +48,14 @@ describe("node registry", () => {
 
   it("builds a catalogue for a plan's features", () => {
     const catalogue = nodeCatalogue(["core_connectors"]);
-    expect(catalogue).toHaveLength(27);
+    expect(catalogue).toHaveLength(32);
     expect(catalogue.map((entry) => entry.type).sort()).toEqual([
       "ai.agent",
       "ai.classify",
       "ai.extract",
       "ai.llm",
       "airtable.createRecord",
+      "datetime.format",
       "discord.postMessage",
       "email.send",
       "form.trigger",
@@ -62,6 +63,7 @@ describe("node registry", () => {
       "http.request",
       "linear.createIssue",
       "logic.approval",
+      "logic.code",
       "logic.condition",
       "logic.loop",
       "logic.set",
@@ -71,11 +73,14 @@ describe("node registry", () => {
       "manual.trigger",
       "notion.createPage",
       "schedule.trigger",
+      "sendgrid.sendEmail",
       "slack.postMessage",
       "stripe.event",
+      "supabase.insertRow",
       "teams.postCard",
       "telegram.message",
       "telegram.sendMessage",
+      "twilio.sendSms",
       "webhook.trigger",
     ]);
 
@@ -122,6 +127,8 @@ describe("node registry", () => {
       "logic",
       "logic",
       "logic",
+      "logic",
+      "logic",
       "ai",
       "ai",
       "ai",
@@ -130,10 +137,13 @@ describe("node registry", () => {
       "chat",
       "chat",
       "chat",
+      "chat",
       "data",
       "data",
       "data",
       "data",
+      "data",
+      "action",
       "action",
       "action",
     ]);
@@ -141,7 +151,7 @@ describe("node registry", () => {
 
   it("dims exactly the gated nodes for an org with no paid features", () => {
     const catalogue = nodeCatalogue([]);
-    expect(catalogue).toHaveLength(27);
+    expect(catalogue).toHaveLength(32);
 
     const blocked = catalogue.filter((entry) => !entry.allowed).map((entry) => entry.type);
     expect(blocked.sort()).toEqual(Object.keys(GATED_NODES).sort());
@@ -154,7 +164,7 @@ describe("node registry", () => {
 
   it("allows every node on Pro", () => {
     const catalogue = nodeCatalogue(featuresForPlan("pro"));
-    expect(catalogue).toHaveLength(27);
+    expect(catalogue).toHaveLength(32);
     for (const entry of catalogue) expect(entry.allowed).toBe(true);
   });
 

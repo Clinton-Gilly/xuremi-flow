@@ -5,9 +5,12 @@ import { githubCreateIssueNode } from "./actions/github-create-issue";
 import { httpRequest } from "./actions/http-request";
 import { linearCreateIssueNode } from "./actions/linear-create-issue";
 import { notionCreatePageNode } from "./actions/notion-create-page";
+import { sendgridSendEmailNode } from "./actions/sendgrid-send-email";
 import { slackPostNode } from "./actions/slack-post";
+import { supabaseInsertNode } from "./actions/supabase-insert";
 import { teamsPostCardNode } from "./actions/teams-post-card";
 import { telegramSendNode } from "./actions/telegram-send";
+import { twilioSendSmsNode } from "./actions/twilio-send-sms";
 import { agentNode } from "./ai/agent";
 import { classifyNode } from "./ai/classify";
 import { extractNode } from "./ai/extract";
@@ -15,7 +18,9 @@ import { llmNode } from "./ai/llm";
 import { categoryOrder } from "./categories";
 import type { AnyNodeDef, NodeCategory } from "./define";
 import { approvalNode } from "./logic/approval";
+import { codeNode } from "./logic/code";
 import { conditionNode } from "./logic/condition";
+import { datetimeFormatNode } from "./logic/datetime";
 import { loopNode } from "./logic/loop";
 import { setNode } from "./logic/set";
 import { switchNode } from "./logic/switch";
@@ -40,6 +45,8 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   conditionNode,
   switchNode,
   setNode,
+  codeNode,
+  datetimeFormatNode,
   waitNode,
   waitForWebhookNode,
   approvalNode,
@@ -52,12 +59,15 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   discordPostNode,
   telegramSendNode,
   teamsPostCardNode,
+  twilioSendSmsNode,
   notionCreatePageNode,
   airtableCreateRecordNode,
   linearCreateIssueNode,
   githubCreateIssueNode,
+  supabaseInsertNode,
   httpRequest,
   emailSend,
+  sendgridSendEmailNode,
 ];
 
 export function buildRegistry(definitions: readonly AnyNodeDef[]): Record<string, AnyNodeDef> {
