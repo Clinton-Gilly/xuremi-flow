@@ -272,6 +272,80 @@ export const getWebhookResponse = query({
   },
 });
 
+type ExecutionStatusResult = {
+  executionId: string;
+  status: string;
+  finishedAt?: number;
+  error?: string;
+} | null;
+
+/** Reads an execution's current status and completion details. */
+export const getExecutionStatus = query({
+  args: { secret: v.string(), executionId: v.id("executions") },
+  returns: v.union(
+    v.object({
+      executionId: v.string(),
+      status: v.string(),
+      finishedAt: v.optional(v.number()),
+      error: v.optional(v.string()),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, { secret, executionId }): Promise<ExecutionStatusResult> => {
+    guard(secret);
+    const execution = await ctx.db.get(executionId);
+    if (!execution) return null;
+    return {
+      executionId: execution._id,
+      status: execution.status,
+      finishedAt: execution.finishedAt,
+      error: execution.error,
+    };
+  },
+});
+
+type ExecutionStepsResult = {
+  steps: {
+    nodeId: string;
+    nodeType: string;
+    status: string;
+    output?: any;
+    error?: string;
+  }[];
+};
+
+/** Reads all step outputs for an execution. */
+export const getExecutionSteps = query({
+  args: { secret: v.string(), executionId: v.id("executions") },
+  returns: v.object({
+    steps: v.array(
+      v.object({
+        nodeId: v.string(),
+        nodeType: v.string(),
+        status: v.string(),
+        output: v.optional(v.any()),
+        error: v.optional(v.string()),
+      }),
+    ),
+  }),
+  handler: async (ctx, { secret, executionId }): Promise<ExecutionStepsResult> => {
+    guard(secret);
+    const rows = await ctx.db
+      .query("steps")
+      .withIndex("by_execution", (q) => q.eq("executionId", executionId))
+      .collect();
+    return {
+      steps: rows.map((r) => ({
+        nodeId: r.nodeId,
+        nodeType: r.nodeType,
+        status: r.status,
+        output: r.output,
+        error: r.error,
+      })),
+    };
+  },
+});
+
 /** Writes `skipped` rows for the nodes a finished run never reached (branches not taken). */
 export const markSkipped = mutation({
   args: {

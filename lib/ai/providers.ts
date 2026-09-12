@@ -5,7 +5,7 @@
 // (`createGoogle`, not `createGoogleGenerativeAI`; `createDeepSeek`, not `createDeepseek`;
 // `createOpenRouter` from `@openrouter/ai-sdk-provider`). The AI nodes only ever call these through
 // `modelFor`, so a new provider is one `case` here plus a connector file.
-import type { LanguageModel } from "ai";
+import type { EmbeddingModel, LanguageModel } from "ai";
 // Provider packages are loaded lazily inside providerFor(): node definitions are imported by the
 // canvas (client bundle) for their schemas, and a static import here would drag every @ai-sdk/*
 // package into the browser. Steps run in Node, where the dynamic import resolves normally.
@@ -94,6 +94,32 @@ export async function modelFor(
   options: ProviderOptions = {},
 ): Promise<LanguageModel> {
   return (await providerFor(provider, apiKey, options))(modelId);
+}
+
+/** Returns an embedding model for the provider and modelId. */
+export async function embeddingModelFor(
+  provider: string,
+  apiKey: string,
+  modelId: string = "text-embedding-3-small",
+): Promise<EmbeddingModel> {
+  switch (provider) {
+    case "openai": {
+      const { createOpenAI } = await import("@ai-sdk/openai");
+      return createOpenAI({ apiKey }).textEmbeddingModel(modelId || "text-embedding-3-small");
+    }
+    case "google": {
+      const { createGoogle } = await import("@ai-sdk/google");
+      return createGoogle({ apiKey }).textEmbeddingModel(modelId || "text-embedding-004");
+    }
+    case "mistral": {
+      const { createMistral } = await import("@ai-sdk/mistral");
+      return createMistral({ apiKey }).textEmbeddingModel(modelId || "mistral-embed");
+    }
+    default: {
+      const { createOpenAI } = await import("@ai-sdk/openai");
+      return createOpenAI({ apiKey }).textEmbeddingModel("text-embedding-3-small");
+    }
+  }
 }
 
 /**

@@ -206,6 +206,68 @@ export async function getWebhookResponse(executionId: string) {
   });
 }
 
+/** Reads an execution's current status (running, waiting, completed, failed). */
+export async function getExecutionStatus(executionId: string) {
+  const { client, secret } = engineClient();
+  return await client.query(api.engine.getExecutionStatus, {
+    secret,
+    executionId: executionRef(executionId),
+  });
+}
+
+/** Reads all step rows for an execution. */
+export async function getExecutionSteps(executionId: string) {
+  const { client, secret } = engineClient();
+  return await client.query(api.engine.getExecutionSteps, {
+    secret,
+    executionId: executionRef(executionId),
+  });
+}
+
+/**
+ * Polls for an execution to reach a terminal state ("completed" or "failed").
+ * Returns status, error, and outputs.
+ */
+export async function pollExecutionCompletion(
+  executionId: string,
+  timeoutMs: number = 30000,
+  pollIntervalMs: number = 500,
+): Promise<{
+  status: string;
+  finishedAt?: number;
+  error?: string;
+  outputs?: Record<string, unknown>;
+  lastOutput?: unknown;
+}> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const status = await getExecutionStatus(executionId);
+    if (status && (status.status === "completed" || status.status === "failed")) {
+      const steps = await getExecutionSteps(executionId);
+      const outputs: Record<string, unknown> = {};
+      let lastOutput: unknown = null;
+      for (const step of steps.steps) {
+        if (step.output !== undefined) {
+          outputs[step.nodeId] = step.output;
+          lastOutput = step.output;
+        }
+      }
+      return {
+        status: status.status,
+        finishedAt: status.finishedAt,
+        error: status.error,
+        outputs,
+        lastOutput,
+      };
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+  }
+  return {
+    status: "timeout",
+    error: `Timed out waiting for execution ${executionId} after ${Math.round(timeoutMs / 1000)}s`,
+  };
+}
+
 /**
  * One connection as a step sees it: the sealed blob plus the non-secret fields needed to open it
  * (`orgId` is half the AAD) and to decide whether it is usable. `lib/vault.ts#openFresh` is the only

@@ -18,6 +18,8 @@ import { agentNode } from "./ai/agent";
 import { classifyNode } from "./ai/classify";
 import { extractNode } from "./ai/extract";
 import { llmNode } from "./ai/llm";
+import { vectorStoreNode } from "./ai/vector-store";
+import { subWorkflowNode } from "./actions/sub-workflow";
 import { categoryOrder } from "./categories";
 import type { AnyNodeDef, NodeCategory } from "./define";
 import { approvalNode } from "./logic/approval";
@@ -67,6 +69,7 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   extractNode,
   classifyNode,
   agentNode,
+  vectorStoreNode,
   slackPostNode,
   discordPostNode,
   telegramSendNode,
@@ -84,6 +87,7 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   emailSend,
   sendgridSendEmailNode,
   respondToWebhookNode,
+  subWorkflowNode,
 ];
 
 export function buildRegistry(definitions: readonly AnyNodeDef[]): Record<string, AnyNodeDef> {
