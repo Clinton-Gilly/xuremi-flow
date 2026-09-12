@@ -797,7 +797,7 @@ export function ConfigPanel({
                     </Label>
                     <BooleanSwitch
                       id={`${node.id}-continue-on-fail`}
-                      value={node.data.continueOnFail ?? false}
+                      checked={node.data.continueOnFail ?? false}
                       onChange={(val) =>
                         patchData((data) => ({
                           ...data,

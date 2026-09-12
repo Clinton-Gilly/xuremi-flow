@@ -247,6 +247,13 @@ export const markStep = mutation({
   },
 });
 
+type WebhookResponse = {
+  status: number;
+  contentType: string;
+  headers: any;
+  body: any;
+} | null;
+
 /** Reads the webhook response produced by a webhook.respond step, or null if not yet run. */
 export const getWebhookResponse = query({
   args: { secret: v.string(), executionId: v.id("executions") },
@@ -259,7 +266,7 @@ export const getWebhookResponse = query({
     }),
     v.null(),
   ),
-  handler: async (ctx, { secret, executionId }) => {
+  handler: async (ctx, { secret, executionId }): Promise<WebhookResponse> => {
     guard(secret);
     return await ctx.runQuery(internal.steps.getWebhookResponse, { executionId });
   },
