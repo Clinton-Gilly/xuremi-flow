@@ -1,0 +1,35 @@
+﻿# Version control
+.git
+.github
+
+# Dependencies
+node_modules
+**/node_modules
+.pnp
+.pnp.*
+
+# Build outputs & caches
+.next
+.output
+.eve
+**/.eve
+.swc
+.vercel
+dist
+build
+out
+
+# Development & tools
+.claude
+.agents
+.cursor
+.idea
+.vscode
+tests
+coverage
+docs
+
+# Environment & logs
+.env*.local
+*.log
+*.tsbuildinfo
