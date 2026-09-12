@@ -48,7 +48,7 @@ describe("node registry", () => {
 
   it("builds a catalogue for a plan's features", () => {
     const catalogue = nodeCatalogue(["core_connectors"]);
-    expect(catalogue).toHaveLength(37);
+    expect(catalogue).toHaveLength(40);
     expect(catalogue.map((entry) => entry.type).sort()).toEqual([
       "ai.agent",
       "ai.classify",
@@ -58,6 +58,7 @@ describe("node registry", () => {
       "datetime.format",
       "discord.postMessage",
       "email.send",
+      "error.trigger",
       "form.trigger",
       "github.createIssue",
       "googlesheets.appendRow",
@@ -65,10 +66,12 @@ describe("node registry", () => {
       "http.request",
       "linear.createIssue",
       "logic.approval",
+      "logic.batch",
       "logic.code",
       "logic.condition",
       "logic.filter",
       "logic.loop",
+      "logic.merge",
       "logic.set",
       "logic.switch",
       "logic.wait",
@@ -126,6 +129,9 @@ describe("node registry", () => {
       "trigger",
       "trigger",
       "trigger",
+      "trigger",
+      "logic",
+      "logic",
       "logic",
       "logic",
       "logic",
@@ -162,7 +168,7 @@ describe("node registry", () => {
 
   it("dims exactly the gated nodes for an org with no paid features", () => {
     const catalogue = nodeCatalogue([]);
-    expect(catalogue).toHaveLength(37);
+    expect(catalogue).toHaveLength(40);
 
     const blocked = catalogue.filter((entry) => !entry.allowed).map((entry) => entry.type);
     expect(blocked.sort()).toEqual(Object.keys(GATED_NODES).sort());
@@ -175,7 +181,7 @@ describe("node registry", () => {
 
   it("allows every node on Pro", () => {
     const catalogue = nodeCatalogue(featuresForPlan("pro"));
-    expect(catalogue).toHaveLength(37);
+    expect(catalogue).toHaveLength(40);
     for (const entry of catalogue) expect(entry.allowed).toBe(true);
   });
 

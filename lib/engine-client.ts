@@ -397,7 +397,17 @@ export async function startRun(input: {
 
   const run = await start(
     runGraph,
-    [{ executionId, orgId: input.orgId, planSlug: input.planSlug, graph, trigger }],
+    [
+      {
+        executionId,
+        orgId: input.orgId,
+        planSlug: input.planSlug,
+        graph,
+        trigger,
+        workflowId: input.workflowId,
+        workflowName: workflow.name,
+      },
+    ],
     // Plaintext run metadata, filterable in the run inspector and the Vercel dashboard. Ids only.
     { attributes: { executionId, orgId: input.orgId } },
   );

@@ -3,6 +3,7 @@ import { createHook, sleep } from "workflow";
 import { DONE_HANDLE } from "@/nodes/logic/loop";
 import { loopBody, loopBodyNodes, nextNodes, unvisited } from "@/workflows/graph";
 import {
+  recordErrorTrigger,
   recordFinish,
   recordLoop,
   recordResume,
@@ -43,7 +44,15 @@ function handleFromPayload(payload: unknown): string | null {
  * The name and the path are permanent — they are the workflow's id
  * (`workflow//./workflows/run-graph//runGraph`).
  */
-export async function runGraph({ executionId, orgId, planSlug, graph, trigger }: RunInput) {
+export async function runGraph({
+  executionId,
+  orgId,
+  planSlug,
+  graph,
+  trigger,
+  workflowId,
+  workflowName,
+}: RunInput) {
   "use workflow";
 
   // The trigger's payload is its output: `startRun` already wrote its `success` step row.
@@ -200,7 +209,25 @@ export async function runGraph({ executionId, orgId, planSlug, graph, trigger }:
   } catch (err) {
     // A step that exhausted its retries (or threw a FatalError) fails the run: record why, then
     // rethrow so the SDK marks the run failed too and the trace shows the original error.
-    await recordFinish(executionId, "failed", err instanceof Error ? err.message : String(err));
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    await recordFinish(executionId, "failed", errorMessage);
+
+    const triggerType = graph.nodes[graph.triggerId]?.data?.nodeType;
+    if (triggerType !== "error.trigger") {
+      try {
+        await recordErrorTrigger({
+          failedExecutionId: executionId,
+          orgId,
+          planSlug,
+          failedWorkflowId: workflowId,
+          failedWorkflowName: workflowName,
+          error: errorMessage,
+        });
+      } catch (triggerErr) {
+        console.error("Failed to record error trigger:", triggerErr);
+      }
+    }
+
     throw err;
   }
 }

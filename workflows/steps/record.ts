@@ -3,9 +3,11 @@ import { FatalError } from "workflow";
 import {
   finishExecution,
   getStep,
+  listWorkflowsByTrigger,
   markStep,
   markSkipped,
   setExecutionStatus,
+  startRun,
 } from "@/lib/engine-client";
 import type { ExecutionStatus } from "@/convex/lib/validators";
 
@@ -156,3 +158,50 @@ export async function recordLoop(
     output,
   });
 }
+
+/**
+ * Dispatches the error payload to any active error.trigger workflows in the organization.
+ * Automatically guards against recursive error triggering.
+ */
+export async function recordErrorTrigger(args: {
+  failedExecutionId: string;
+  orgId: string;
+  planSlug: string;
+  failedWorkflowId?: string;
+  failedWorkflowName?: string;
+  error: string;
+}): Promise<void> {
+  "use step";
+
+  const { failedExecutionId, orgId, planSlug, failedWorkflowId, failedWorkflowName, error } = args;
+  try {
+    const errorWorkflows = await listWorkflowsByTrigger({
+      orgId,
+      triggerType: "error.trigger",
+    });
+
+    for (const wf of errorWorkflows) {
+      // Anti-recursion: Never trigger the same workflow if it failed itself
+      if (failedWorkflowId && wf._id === failedWorkflowId) continue;
+
+      await startRun({
+        orgId: wf.orgId,
+        workflowId: wf._id,
+        trigger: {
+          type: "error",
+          payload: {
+            executionId: failedExecutionId,
+            workflowId: failedWorkflowId ?? "",
+            workflowName: failedWorkflowName ?? wf.name,
+            error,
+            failedAt: Date.now(),
+          },
+        },
+        planSlug: planSlug || "free_org",
+      });
+    }
+  } catch (triggerError) {
+    console.error("Failed to trigger error workflows:", triggerError);
+  }
+}
+

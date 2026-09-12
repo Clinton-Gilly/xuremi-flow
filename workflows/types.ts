@@ -12,7 +12,7 @@ export type Trigger = { type: string; payload: unknown };
 // `planSlug` is the plan snapshotted on the execution at run start: `runNode` gates a node's
 // (and its connection's) `requiresFeature` against it, so a mid-run downgrade cannot change what a
 // run in flight is allowed to do.
-export type RunInput = { executionId: string; orgId: string; planSlug: string; graph: RunGraph; trigger: Trigger };
+export type RunInput = { executionId: string; orgId: string; planSlug: string; graph: RunGraph; trigger: Trigger; workflowId?: string; workflowName?: string };
 // `outputs` is keyed by node key, and `trigger`/`item` are the two reserved template roots: the
 // step resolves `node.data.inputs` against `{ ...outputs, trigger: trigger.payload, $item: item }`.
 // `iteration` is the 0-based pass a Loop is on: it is part of the step's identity (one `steps` row

@@ -23,7 +23,7 @@ function step(input: unknown, output: unknown): LastRunStep {
 
 describe("logic node guides", () => {
   it("explains every Logic node", () => {
-    expect(LOGIC_NODES).toHaveLength(10);
+    expect(LOGIC_NODES).toHaveLength(12);
     for (const node of LOGIC_NODES) {
       // Long enough to be a paragraph rather than a restated title.
       expect(node.guide?.summary.length ?? 0).toBeGreaterThan(80);

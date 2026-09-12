@@ -30,8 +30,11 @@ import { setNode } from "./logic/set";
 import { switchNode } from "./logic/switch";
 import { waitNode } from "./logic/wait";
 import { waitForWebhookNode } from "./logic/wait-for-webhook";
+import { batchNode } from "./logic/batch";
+import { mergeNode } from "./logic/merge";
 import { respondToWebhookNode } from "./actions/respond-to-webhook";
 import { toJsonSchema, type JsonSchema } from "./schema";
+import { errorTriggerNode } from "./triggers/error";
 import { formTriggerNode } from "./triggers/form";
 import { manualTrigger } from "./triggers/manual";
 import { scheduleTriggerNode } from "./triggers/schedule";
@@ -47,6 +50,7 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   scheduleTriggerNode,
   telegramMessageTriggerNode,
   stripeEventTriggerNode,
+  errorTriggerNode,
   conditionNode,
   filterNode,
   switchNode,
@@ -57,6 +61,8 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   waitForWebhookNode,
   approvalNode,
   loopNode,
+  mergeNode,
+  batchNode,
   llmNode,
   extractNode,
   classifyNode,
