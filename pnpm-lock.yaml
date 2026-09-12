@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  eve@0.49.0: e5496e943feb4ab4415ce2d8a8d9da833b35857224425d5176072210f0292a5e
+
 importers:
 
   .:
@@ -70,7 +73,7 @@ importers:
         version: 10.0.1
       eve:
         specifier: 0.49.0
-        version: 0.49.0(@vercel/blob@2.8.0)(@vercel/functions@3.9.5(@aws-sdk/credential-provider-web-identity@3.972.49)(ws@8.21.0))(ai@7.0.90(zod@4.5.4))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(just-bash@3.4.2(supports-color@8.1.1))(lru-cache@11.5.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0))
+        version: 0.49.0(patch_hash=e5496e943feb4ab4415ce2d8a8d9da833b35857224425d5176072210f0292a5e)(@vercel/blob@2.8.0)(@vercel/functions@3.9.5(@aws-sdk/credential-provider-web-identity@3.972.49)(ws@8.21.0))(ai@7.0.90(zod@4.5.4))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(just-bash@3.4.2(supports-color@8.1.1))(lru-cache@11.5.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0))
       lucide-react:
         specifier: 1.39.0
         version: 1.39.0(react@19.2.8)
@@ -11465,7 +11468,7 @@ snapshots:
 
   etag@1.8.1: {}
 
-  eve@0.49.0(@vercel/blob@2.8.0)(@vercel/functions@3.9.5(@aws-sdk/credential-provider-web-identity@3.972.49)(ws@8.21.0))(ai@7.0.90(zod@4.5.4))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(just-bash@3.4.2(supports-color@8.1.1))(lru-cache@11.5.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0)):
+  eve@0.49.0(patch_hash=e5496e943feb4ab4415ce2d8a8d9da833b35857224425d5176072210f0292a5e)(@vercel/blob@2.8.0)(@vercel/functions@3.9.5(@aws-sdk/credential-provider-web-identity@3.972.49)(ws@8.21.0))(ai@7.0.90(zod@4.5.4))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(just-bash@3.4.2(supports-color@8.1.1))(lru-cache@11.5.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0)):
     dependencies:
       ai: 7.0.90(zod@4.5.4)
       nitro: 3.0.260610-beta(@vercel/blob@2.8.0)(@vercel/functions@3.9.5(@aws-sdk/credential-provider-web-identity@3.972.49)(ws@8.21.0))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(lru-cache@11.5.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.0))
