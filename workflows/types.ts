@@ -5,7 +5,7 @@
 // `data.key` is the node's human name in templates (`{{ http_request_1.body }}`): unique per
 // workflow, `^[a-z][a-z0-9_]*$`, written by the canvas and derived by `toRunGraph` for graphs
 // saved before keys existed. Run outputs are keyed by it; edges still use ids.
-export type RunNode = { id: string; type: string; data: { nodeType: string; key: string; label: string; inputs: Record<string, unknown>; connectionId?: string } };
+export type RunNode = { id: string; type: string; data: { nodeType: string; key: string; label: string; inputs: Record<string, unknown>; connectionId?: string; continueOnFail?: boolean } };
 export type RunEdge = { id: string; source: string; target: string; sourceHandle?: string | null; targetHandle?: string | null };
 export type RunGraph = { triggerId: string; nodes: Record<string, RunNode>; edges: RunEdge[] };
 export type Trigger = { type: string; payload: unknown };

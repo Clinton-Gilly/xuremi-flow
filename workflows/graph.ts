@@ -74,6 +74,7 @@ function toRunNode(raw: unknown, index: number, takenKeys: Set<string>): RunNode
       label: toNonEmptyString(data.label) ?? NODES[nodeType]?.name ?? nodeType,
       inputs: isRecord(data.inputs) ? data.inputs : {},
       ...(connectionId ? { connectionId } : {}),
+      ...(typeof data.continueOnFail === "boolean" ? { continueOnFail: data.continueOnFail } : {}),
     },
   };
 }

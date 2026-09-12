@@ -2,7 +2,7 @@ import { ConvexError } from "convex/values";
 
 import type { Id } from "@/convex/_generated/dataModel";
 import { getOrgPlan } from "@/lib/billing";
-import { getWorkflowPublic, startRun } from "@/lib/engine-client";
+import { getWebhookResponse, getWorkflowPublic, startRun } from "@/lib/engine-client";
 import { safeEqual } from "@/lib/timing";
 
 /**
@@ -130,6 +130,37 @@ async function handle(request: Request, { params }: RouteContext): Promise<Respo
       trigger: { type: "webhook", payload },
       planSlug: await getOrgPlan(workflow.orgId),
     });
+
+    if (workflow.hasRespondNode) {
+      const deadline = Date.now() + 25000;
+      while (Date.now() < deadline) {
+        const res = await getWebhookResponse(executionId);
+        if (res) {
+          const body =
+            typeof res.body === "string"
+              ? res.body
+              : JSON.stringify(res.body ?? {});
+
+          const responseHeaders = new Headers();
+          if (res.headers && typeof res.headers === "object") {
+            for (const [k, v] of Object.entries(res.headers)) {
+              if (typeof v === "string") responseHeaders.set(k, v);
+            }
+          }
+          if (!responseHeaders.has("content-type")) {
+            responseHeaders.set("content-type", res.contentType || "application/json");
+          }
+
+          return new Response(body, {
+            status: res.status,
+            headers: responseHeaders,
+          });
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      return fail(504, "timeout", "Workflow did not respond within the 25-second limit.");
+    }
+
     return Response.json({ executionId }, { status: 202 });
   } catch (cause) {
     // The org is out of runs for the month: a real answer, and one a sender should not retry into.

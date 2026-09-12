@@ -157,6 +157,29 @@ export async function runNode(input: NodeInput): Promise<NodeResult> {
       return { nodeId, output, handle, control, ...(items ? { items } : {}) };
     } catch (error) {
       const message = describeError(error, node.data.label ?? nodeType);
+      const continueOnFail =
+        node.data.continueOnFail === true ||
+        (typeof inputs === "object" &&
+          inputs !== null &&
+          (inputs as { continueOnFail?: unknown }).continueOnFail === true);
+
+      if (continueOnFail) {
+        const errorOutput = { error: message, failed: true, success: false };
+        await markStep({
+          executionId,
+          orgId,
+          nodeId,
+          nodeType,
+          status: "success",
+          attempt,
+          input: redact(inputs),
+          output: errorOutput,
+          warnings: [`Node failed: ${message} (continued on fail)`],
+          iteration,
+        });
+        return { nodeId, output: errorOutput, handle: null, control: undefined };
+      }
+
       await markStep({
         executionId,
         orgId,

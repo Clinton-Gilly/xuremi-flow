@@ -247,6 +247,24 @@ export const markStep = mutation({
   },
 });
 
+/** Reads the webhook response produced by a webhook.respond step, or null if not yet run. */
+export const getWebhookResponse = query({
+  args: { secret: v.string(), executionId: v.id("executions") },
+  returns: v.union(
+    v.object({
+      status: v.number(),
+      contentType: v.string(),
+      headers: v.any(),
+      body: v.any(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, { secret, executionId }) => {
+    guard(secret);
+    return await ctx.runQuery(internal.steps.getWebhookResponse, { executionId });
+  },
+});
+
 /** Writes `skipped` rows for the nodes a finished run never reached (branches not taken). */
 export const markSkipped = mutation({
   args: {
@@ -549,6 +567,7 @@ const workflowPublicResult = v.union(
     status: workflowStatusValidator,
     webhookSecret: v.string(),
     hasTrigger: v.object({ webhook: v.boolean(), form: v.boolean() }),
+    hasRespondNode: v.optional(v.boolean()),
   }),
   v.null(),
 );
@@ -575,6 +594,11 @@ export const workflowPublic = internalQuery({
     const workflow = await ctx.db.get(workflowId);
     if (!workflow) return null;
 
+    const nodes = (workflow.graph?.nodes as StoredNodeShape[]) ?? [];
+    const hasRespondNode = nodes.some(
+      (entry) => entry?.data?.nodeType === "webhook.respond",
+    );
+
     return {
       orgId: workflow.orgId,
       status: workflow.status,
@@ -583,6 +607,7 @@ export const workflowPublic = internalQuery({
         webhook: hasTriggerNode(workflow, WEBHOOK_TRIGGER),
         form: hasTriggerNode(workflow, FORM_TRIGGER),
       },
+      hasRespondNode,
     };
   },
 });

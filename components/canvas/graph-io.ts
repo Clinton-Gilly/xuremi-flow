@@ -43,6 +43,7 @@ export type WorkflowNodeData = {
   key: string;
   label: string;
   inputs: Record<string, unknown>;
+  continueOnFail?: boolean;
   status?: NodeStatus;
   /** Runtime-only, like `status`: how long this node's step took in the latest run. */
   durationMs?: number;
@@ -145,6 +146,7 @@ function toNode(raw: unknown): WorkflowNodeType | null {
       key: toOptionalString(data.key) ?? "",
       label: toOptionalString(data.label) ?? NODES[nodeType]?.name ?? nodeType,
       inputs: isRecord(data.inputs) ? data.inputs : {},
+      ...(typeof data.continueOnFail === "boolean" ? { continueOnFail: data.continueOnFail } : {}),
       status: "idle",
     },
   };
@@ -357,6 +359,9 @@ export function toStoredGraph(
           key: node.data.key,
           label: node.data.label,
           inputs: node.data.inputs,
+          ...(typeof node.data.continueOnFail === "boolean"
+            ? { continueOnFail: node.data.continueOnFail }
+            : {}),
         },
       };
     }),

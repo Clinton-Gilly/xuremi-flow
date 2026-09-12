@@ -785,6 +785,32 @@ export function ConfigPanel({
 
               {/* Under the fields it explains: the same three values, as the run resolved them. */}
               {showsCondition ? <ConditionLastTime run={lastRun.self} /> : null}
+
+              {definition?.category !== "trigger" && (
+                <div className="space-y-1 rounded-md border border-border/60 p-2.5">
+                  <div className="flex items-center justify-between">
+                    <Label
+                      htmlFor={`${node.id}-continue-on-fail`}
+                      className="text-xs font-medium cursor-pointer"
+                    >
+                      Continue on fail
+                    </Label>
+                    <BooleanSwitch
+                      id={`${node.id}-continue-on-fail`}
+                      value={node.data.continueOnFail ?? false}
+                      onChange={(val) =>
+                        patchData((data) => ({
+                          ...data,
+                          continueOnFail: val,
+                        }))
+                      }
+                    />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-snug">
+                    If this step encounters an error, record the failure but allow downstream steps to continue.
+                  </p>
+                </div>
+              )}
             </>
           )}
 

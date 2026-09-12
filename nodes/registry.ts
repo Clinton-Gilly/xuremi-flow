@@ -21,11 +21,13 @@ import { approvalNode } from "./logic/approval";
 import { codeNode } from "./logic/code";
 import { conditionNode } from "./logic/condition";
 import { datetimeFormatNode } from "./logic/datetime";
+import { filterNode } from "./logic/filter";
 import { loopNode } from "./logic/loop";
 import { setNode } from "./logic/set";
 import { switchNode } from "./logic/switch";
 import { waitNode } from "./logic/wait";
 import { waitForWebhookNode } from "./logic/wait-for-webhook";
+import { respondToWebhookNode } from "./actions/respond-to-webhook";
 import { toJsonSchema, type JsonSchema } from "./schema";
 import { formTriggerNode } from "./triggers/form";
 import { manualTrigger } from "./triggers/manual";
@@ -43,6 +45,7 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   telegramMessageTriggerNode,
   stripeEventTriggerNode,
   conditionNode,
+  filterNode,
   switchNode,
   setNode,
   codeNode,
@@ -68,6 +71,7 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   httpRequest,
   emailSend,
   sendgridSendEmailNode,
+  respondToWebhookNode,
 ];
 
 export function buildRegistry(definitions: readonly AnyNodeDef[]): Record<string, AnyNodeDef> {

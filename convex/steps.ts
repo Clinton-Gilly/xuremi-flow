@@ -261,3 +261,44 @@ export const byExecution = query({
       .collect();
   },
 });
+
+/**
+ * Returns the output of a webhook.respond step if one has completed for this execution.
+ */
+export const getWebhookResponse = internalQuery({
+  args: { executionId: v.id("executions") },
+  returns: v.union(
+    v.object({
+      status: v.number(),
+      contentType: v.string(),
+      headers: v.any(),
+      body: v.any(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, { executionId }) => {
+    const steps = await ctx.db
+      .query("steps")
+      .withIndex("by_execution", (q) => q.eq("executionId", executionId))
+      .collect();
+
+    const respondStep = steps.find(
+      (s) => s.nodeType === "webhook.respond" && s.status === "success" && s.output,
+    );
+    if (!respondStep || !respondStep.output) return null;
+
+    const out = respondStep.output as {
+      status?: number;
+      contentType?: string;
+      headers?: Record<string, string>;
+      body?: unknown;
+    };
+
+    return {
+      status: typeof out.status === "number" ? out.status : 200,
+      contentType: typeof out.contentType === "string" ? out.contentType : "application/json",
+      headers: out.headers ?? {},
+      body: out.body ?? null,
+    };
+  },
+});

@@ -23,7 +23,7 @@ function step(input: unknown, output: unknown): LastRunStep {
 
 describe("logic node guides", () => {
   it("explains every Logic node", () => {
-    expect(LOGIC_NODES).toHaveLength(9);
+    expect(LOGIC_NODES).toHaveLength(10);
     for (const node of LOGIC_NODES) {
       // Long enough to be a paragraph rather than a restated title.
       expect(node.guide?.summary.length ?? 0).toBeGreaterThan(80);
@@ -42,6 +42,7 @@ describe("logic node guides", () => {
 
   it("keeps the ids saved graphs address the branches by", () => {
     expect(sourceHandles("logic.condition", {})).toEqual(["true", "false"]);
+    expect(sourceHandles("logic.filter", {})).toEqual(["kept", "discarded"]);
     expect(sourceHandles("logic.loop", {})).toEqual(["each", "done"]);
     expect(sourceHandles("logic.approval", {})).toEqual(["approved", "rejected"]);
     expect(sourceHandles("logic.switch", {})).toEqual(["default"]);
@@ -52,6 +53,8 @@ describe("handleLabel", () => {
   it("shows a branch under the words the node chose for it", () => {
     expect(handleLabel("logic.condition", "true")).toBe("yes");
     expect(handleLabel("logic.condition", "false")).toBe("no");
+    expect(handleLabel("logic.filter", "kept")).toBe("kept");
+    expect(handleLabel("logic.filter", "discarded")).toBe("discarded");
     expect(handleLabel("logic.loop", "each")).toBe("each item");
     expect(handleLabel("logic.loop", "done")).toBe("when done");
     expect(handleLabel("logic.switch", "default")).toBe("otherwise");
@@ -74,6 +77,10 @@ describe("handleDisplays", () => {
     expect(handleDisplays("logic.condition", {})).toEqual([
       { handle: "true", label: "yes" },
       { handle: "false", label: "no" },
+    ]);
+    expect(handleDisplays("logic.filter", {})).toEqual([
+      { handle: "kept", label: "kept" },
+      { handle: "discarded", label: "discarded" },
     ]);
     expect(handleDisplays("logic.loop", { items: "[]" })).toEqual([
       { handle: "each", label: "each item" },

@@ -197,6 +197,15 @@ export async function finishExecution(
   });
 }
 
+/** Fetches any completed webhook.respond output for an execution. */
+export async function getWebhookResponse(executionId: string) {
+  const { client, secret } = engineClient();
+  return await client.query(api.engine.getWebhookResponse, {
+    secret,
+    executionId: executionRef(executionId),
+  });
+}
+
 /**
  * One connection as a step sees it: the sealed blob plus the non-secret fields needed to open it
  * (`orgId` is half the AAD) and to decide whether it is usable. `lib/vault.ts#openFresh` is the only

@@ -758,4 +758,30 @@ describe("runNode child steps", () => {
     await runNode(nodeInput({ url: "https://api.example.com/things" }));
     expect(markStepMock).not.toHaveBeenCalled();
   });
+
+  it("continues with error output when continueOnFail is true", async () => {
+    run.mockRejectedValue(new Error("External service exploded"));
+
+    const input = nodeInput({ url: "https://api.example.com/things" });
+    input.node.data.continueOnFail = true;
+
+    const result = await runNode(input);
+
+    expect(result.output).toEqual({
+      error: "External service exploded",
+      failed: true,
+      success: false,
+    });
+    expect(result.handle).toBeNull();
+    expect(markStepMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        status: "success",
+        output: {
+          error: "External service exploded",
+          failed: true,
+          success: false,
+        },
+      }),
+    );
+  });
 });
