@@ -1,7 +1,33 @@
 import { z } from "zod";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { pollExecutionCompletion, startRun } from "@/lib/engine-client";
 import { ConnectorError, defineNode } from "../define";
+
+function appOrigin(): string {
+  const configured = (process.env.APP_ORIGIN ?? "").trim().replace(/\/+$/, "");
+  const isVercel = process.env.VERCEL === "1";
+
+  if (isVercel && (!configured || configured.includes("localhost") || configured.includes("papaflow"))) {
+    const vercelOrigin = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "";
+    if (vercelOrigin) return vercelOrigin.replace(/\/+$/, "");
+  }
+
+  if (configured) return configured;
+
+  const vercelFallback = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "";
+  if (vercelFallback) return vercelFallback.replace(/\/+$/, "");
+
+  return "http://localhost:3000";
+}
 
 /**
  * Execute Sub-Workflow node:
@@ -58,57 +84,103 @@ export const subWorkflowNode = defineNode({
     outputs: z.record(z.string(), z.any()).optional().describe("Outputs of all nodes in the sub-workflow"),
     durationMs: z.number().optional().describe("Duration of execution in milliseconds"),
   }),
-  async run({ inputs, orgId, planSlug, executionId }) {
+  async run({ inputs, orgId }) {
     const { workflowId, payload, waitForCompletion = true, timeoutSeconds = 30 } = inputs;
 
-    // Self-recursion protection
     if (!workflowId || workflowId.trim() === "") {
       throw new ConnectorError("Workflow ID is required to execute a sub-workflow", 400);
     }
 
-    const startResult = await startRun({
-      orgId,
-      workflowId: workflowId as Id<"workflows">,
-      trigger: {
-        type: "subworkflow",
-        payload: payload ?? {},
+    const origin = appOrigin();
+    const secret = (process.env.ENGINE_SECRET ?? "").trim();
+    const convexUrl = process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL || "";
+
+    const runRes = await fetch(`${origin}/api/engine/run`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(secret ? { Authorization: `Bearer ${secret}` } : {}),
       },
-      planSlug: planSlug || "free_org",
+      body: JSON.stringify({
+        workflowId,
+        orgId,
+        payload: payload && typeof payload === "object" ? payload : { value: payload },
+      }),
     });
+
+    if (!runRes.ok) {
+      const errBody = (await runRes.json().catch(() => ({}))) as { error?: string };
+      throw new ConnectorError(
+        `Failed to trigger sub-workflow (${workflowId}): ${errBody.error || runRes.statusText}`,
+        runRes.status >= 400 && runRes.status < 500 ? 400 : 500,
+      );
+    }
+
+    const runJson = (await runRes.json()) as { executionId: string };
+    const executionId = runJson.executionId;
 
     if (!waitForCompletion) {
       return {
-        executionId: startResult.executionId,
-        runId: startResult.runId,
+        executionId,
         status: "started",
       };
     }
 
+    if (!convexUrl || !secret) {
+      // In testing or minimal environment, return execution started
+      return {
+        executionId,
+        status: "started",
+      };
+    }
+
+    const client = new ConvexHttpClient(convexUrl);
     const startTime = Date.now();
-    const pollResult = await pollExecutionCompletion(startResult.executionId, timeoutSeconds * 1000);
-    const durationMs = Date.now() - startTime;
+    const timeoutMs = timeoutSeconds * 1000;
 
-    if (pollResult.status === "failed") {
-      throw new ConnectorError(
-        `Sub-workflow (${workflowId}) failed: ${pollResult.error || "Unknown error"}`,
-        500,
-      );
+    while (Date.now() - startTime < timeoutMs) {
+      const execStatus = await client.query(api.engine.getExecutionStatus, {
+        secret,
+        executionId: executionId as Id<"executions">,
+      });
+
+      if (execStatus && (execStatus.status === "completed" || execStatus.status === "failed")) {
+        if (execStatus.status === "failed") {
+          throw new ConnectorError(
+            `Sub-workflow (${workflowId}) failed: ${execStatus.error || "Unknown error"}`,
+            500,
+          );
+        }
+
+        const stepsRes = await client.query(api.engine.getExecutionSteps, {
+          secret,
+          executionId: executionId as Id<"executions">,
+        });
+
+        const outputs: Record<string, unknown> = {};
+        let lastOutput: unknown = null;
+        for (const step of stepsRes?.steps ?? []) {
+          if (step.output !== undefined) {
+            outputs[step.nodeId] = step.output;
+            lastOutput = step.output;
+          }
+        }
+
+        return {
+          executionId,
+          status: "completed",
+          result: lastOutput,
+          outputs,
+          durationMs: Date.now() - startTime,
+        };
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
-    if (pollResult.status === "timeout") {
-      throw new ConnectorError(
-        `Sub-workflow (${workflowId}) timed out after ${timeoutSeconds}s`,
-        504,
-      );
-    }
-
-    return {
-      executionId: startResult.executionId,
-      runId: startResult.runId,
-      status: pollResult.status,
-      result: pollResult.lastOutput,
-      outputs: pollResult.outputs,
-      durationMs,
-    };
+    throw new ConnectorError(
+      `Sub-workflow (${workflowId}) timed out after ${timeoutSeconds}s`,
+      504,
+    );
   },
 });

@@ -2,11 +2,6 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { subWorkflowNode } from "../nodes/actions/sub-workflow";
 import { vectorStoreNode } from "../nodes/ai/vector-store";
 
-vi.mock("@/lib/engine-client", () => ({
-  startRun: vi.fn(),
-  pollExecutionCompletion: vi.fn(),
-}));
-
 vi.mock("@/lib/ai/providers", () => ({
   aiCredential: vi.fn(() => ({ provider: "openai", apiKey: "sk-mock-key", options: {} })),
   embeddingModelFor: vi.fn(() => ({ modelId: "text-embedding-3-small" })),
@@ -25,17 +20,26 @@ vi.mock("ai", () => ({
   })),
 }));
 
+const mockQuery = vi.fn();
+
+vi.mock("convex/browser", () => ({
+  ConvexHttpClient: class {
+    query = mockQuery;
+  },
+}));
+
 describe("Phase 4: Sub-Workflows & Vector Store Nodes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.ENGINE_SECRET = "test_engine_secret";
+    process.env.CONVEX_URL = "https://test.convex.cloud";
   });
 
   describe("workflow.execute", () => {
     it("starts a sub-workflow in fire-and-forget mode", async () => {
-      const { startRun } = await import("@/lib/engine-client");
-      vi.mocked(startRun).mockResolvedValueOnce({
-        executionId: "exec_sub_1",
-        runId: "run_sub_1",
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ executionId: "exec_sub_1", status: "started" }),
       });
 
       const output = (await subWorkflowNode.run({
@@ -48,34 +52,37 @@ describe("Phase 4: Sub-Workflows & Vector Store Nodes", () => {
         executionId: "exec_parent_1",
         nodeId: "sub_wf_1",
         planSlug: "free_org",
-      })) as { executionId: string; runId?: string; status: string };
+      })) as { executionId: string; status: string };
 
-      expect(startRun).toHaveBeenCalledWith({
-        orgId: "org_test",
-        workflowId: "wf_child_123",
-        trigger: {
-          type: "subworkflow",
-          payload: { orderId: "ord_999" },
-        },
-        planSlug: "free_org",
-      });
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringContaining("/api/engine/run"),
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({
+            workflowId: "wf_child_123",
+            orgId: "org_test",
+            payload: { orderId: "ord_999" },
+          }),
+        }),
+      );
       expect(output.executionId).toBe("exec_sub_1");
-      expect(output.runId).toBe("run_sub_1");
       expect(output.status).toBe("started");
     });
 
     it("awaits sub-workflow completion and returns results", async () => {
-      const { startRun, pollExecutionCompletion } = await import("@/lib/engine-client");
-      vi.mocked(startRun).mockResolvedValueOnce({
-        executionId: "exec_sub_2",
-        runId: "run_sub_2",
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ executionId: "exec_sub_2", status: "started" }),
       });
-      vi.mocked(pollExecutionCompletion).mockResolvedValueOnce({
-        status: "completed",
-        finishedAt: 123456789,
-        lastOutput: { status: "processed", total: 150 },
-        outputs: { step_done: { status: "processed", total: 150 } },
-      });
+
+      mockQuery
+        .mockResolvedValueOnce({
+          status: "completed",
+          finishedAt: 123456789,
+        })
+        .mockResolvedValueOnce({
+          steps: [{ nodeId: "step_done", output: { status: "processed", total: 150 } }],
+        });
 
       const output = (await subWorkflowNode.run({
         inputs: subWorkflowNode.inputs.parse({
@@ -97,12 +104,12 @@ describe("Phase 4: Sub-Workflows & Vector Store Nodes", () => {
     });
 
     it("throws when the sub-workflow fails", async () => {
-      const { startRun, pollExecutionCompletion } = await import("@/lib/engine-client");
-      vi.mocked(startRun).mockResolvedValueOnce({
-        executionId: "exec_sub_3",
-        runId: "run_sub_3",
+      globalThis.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ executionId: "exec_sub_3", status: "started" }),
       });
-      vi.mocked(pollExecutionCompletion).mockResolvedValueOnce({
+
+      mockQuery.mockResolvedValueOnce({
         status: "failed",
         error: "Division by zero in calculation node",
       });
@@ -152,7 +159,6 @@ describe("Phase 4: Sub-Workflows & Vector Store Nodes", () => {
 
       expect(output.count).toBe(2);
       expect(output.matches.length).toBe(2);
-      // First match should be the highest similarity score
       expect(output.matches[0].score).toBeGreaterThanOrEqual(output.matches[1].score);
       expect(output.matches[0].text).toContain("invoice");
       expect(output.topMatch).toEqual(output.matches[0]);
