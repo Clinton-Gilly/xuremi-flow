@@ -22,9 +22,9 @@ import { NODES } from "@/nodes/registry";
  * problem may belong to.
  */
 describe("workflow templates", () => {
-  it("ships thirteen starter workflows with unique ids, showcases first", () => {
-    expect(WORKFLOW_TEMPLATES).toHaveLength(13);
-    expect(new Set(WORKFLOW_TEMPLATES.map((entry) => entry.id)).size).toBe(13);
+  it("ships fourteen starter workflows with unique ids, showcases first", () => {
+    expect(WORKFLOW_TEMPLATES).toHaveLength(14);
+    expect(new Set(WORKFLOW_TEMPLATES.map((entry) => entry.id)).size).toBe(14);
     expect(WORKFLOW_TEMPLATES.map((entry) => entry.id)).toEqual([
       "support-autopilot",
       "morning-digest",
@@ -39,6 +39,7 @@ describe("workflow templates", () => {
       "hourly-check",
       "approval-gate",
       "loop-list",
+      "social-crossposter",
     ]);
   });
 

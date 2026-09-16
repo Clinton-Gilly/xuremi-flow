@@ -17,6 +17,7 @@ import { openaiConnector } from "./openai";
 import { openrouterConnector } from "./openrouter";
 import { postgresConnector } from "./postgres";
 import { resendConnector } from "./resend";
+import { linkedinConnector } from "./linkedin";
 import { sendgridConnector } from "./sendgrid";
 import { slackConnector } from "./slack";
 import { stripeConnector } from "./stripe";
@@ -24,6 +25,7 @@ import { supabaseConnector } from "./supabase";
 import { teamsConnector } from "./teams";
 import { telegramConnector } from "./telegram";
 import { twilioConnector } from "./twilio";
+import { xConnector } from "./x";
 import { xaiConnector } from "./xai";
 
 /** Adding a provider = one file here + one line in this array. */
@@ -54,6 +56,8 @@ const DEFINITIONS: readonly ConnectorDef[] = [
   sendgridConnector,
   supabaseConnector,
   postgresConnector,
+  xConnector,
+  linkedinConnector,
 ];
 
 export function buildConnectorRegistry(definitions: readonly ConnectorDef[]): Record<string, ConnectorDef> {

@@ -53,7 +53,7 @@ function findFunctions(value: unknown, path = "$"): string[] {
 describe("connector registry", () => {
   it("keys every connector by its own unique provider (ten AI + chat, data, email, payments)", () => {
     const entries = Object.entries(CONNECTORS);
-    expect(entries).toHaveLength(26);
+    expect(entries).toHaveLength(28);
 
     const providers = entries.map(([, def]) => def.provider);
     expect(new Set(providers).size).toBe(providers.length);
@@ -73,6 +73,8 @@ describe("connector registry", () => {
       "twilio",
       "sendgrid",
       "supabase",
+      "x",
+      "linkedin",
     ]) {
       expect(providers).toContain(provider);
     }
@@ -114,7 +116,7 @@ describe("connector registry", () => {
   it("builds a catalogue that carries no functions across the wire", () => {
     const catalogue = connectorCatalogue([]);
 
-    expect(catalogue).toHaveLength(26);
+    expect(catalogue).toHaveLength(28);
     expect(findFunctions(catalogue)).toEqual([]);
     expect(JSON.parse(JSON.stringify(catalogue))).toEqual(catalogue);
 
@@ -152,7 +154,7 @@ describe("connector registry", () => {
 
   it("dims exactly the Pro connectors for an org with no paid features", () => {
     const catalogue = connectorCatalogue([]);
-    expect(catalogue).toHaveLength(26);
+    expect(catalogue).toHaveLength(28);
 
     const blocked = catalogue.filter((entry) => !entry.allowed).map((entry) => entry.provider);
     expect(blocked.sort()).toEqual(PRO_PROVIDERS);
@@ -169,7 +171,7 @@ describe("connector registry", () => {
 
   it("allows every connector on Pro", () => {
     const catalogue = connectorCatalogue(featuresForPlan("pro"));
-    expect(catalogue).toHaveLength(26);
+    expect(catalogue).toHaveLength(28);
     for (const entry of catalogue) expect(entry.allowed).toBe(true);
   });
 

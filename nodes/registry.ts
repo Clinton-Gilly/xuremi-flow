@@ -14,6 +14,8 @@ import { supabaseInsertNode } from "./actions/supabase-insert";
 import { teamsPostCardNode } from "./actions/teams-post-card";
 import { telegramSendNode } from "./actions/telegram-send";
 import { twilioSendSmsNode } from "./actions/twilio-send-sms";
+import { xPostNode } from "./actions/x-post";
+import { linkedinPostNode } from "./actions/linkedin-post";
 import { agentNode } from "./ai/agent";
 import { classifyNode } from "./ai/classify";
 import { extractNode } from "./ai/extract";
@@ -88,6 +90,8 @@ const DEFINITIONS: readonly AnyNodeDef[] = [
   sendgridSendEmailNode,
   respondToWebhookNode,
   subWorkflowNode,
+  xPostNode,
+  linkedinPostNode,
 ];
 
 export function buildRegistry(definitions: readonly AnyNodeDef[]): Record<string, AnyNodeDef> {

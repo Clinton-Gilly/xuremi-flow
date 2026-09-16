@@ -713,6 +713,48 @@ const loopList: TemplateGraph = graph(
   ],
 );
 
+/**
+ * Social cross-poster: post brief in, tailored posts published to X and LinkedIn.
+ *
+ * One input brief generates platform-specific content with AI — keeping within X's 280-character
+ * limit while providing rich commentary on LinkedIn — and publishes both simultaneously
+ * with zero Pro gating on free accounts.
+ */
+const socialCrossposter: TemplateGraph = graph(
+  [
+    node("brief", "form.trigger", "Social post brief", 0, 1, {
+      title: "Social post brief",
+      description: "Enter your announcement or topic to post across X and LinkedIn.",
+      fields: [
+        { name: "topic", label: "Announcement topic", type: "text", required: true },
+        { name: "details", label: "Key points & link", type: "textarea", required: true },
+      ],
+      submitLabel: "Generate & Post",
+    }),
+    node("draft", "ai.llm", "Draft tailored posts", 1, 1, {
+      connectionId: "",
+      model: "",
+      instructions:
+        "You are an expert social media manager. Create engaging copy based on the brief. " +
+        "Keep the post concise and compelling for social media audiences.",
+      prompt: "Topic: {{ brief.values.topic }}\n\nDetails: {{ brief.values.details }}",
+    }),
+    node("x_post", "x.postTweet", "Post to X", 2, 0, {
+      connectionId: "",
+      text: "{{ draft.text }}",
+    }),
+    node("linkedin_post", "linkedin.post", "Post to LinkedIn", 2, 2, {
+      connectionId: "",
+      text: "{{ draft.text }}",
+    }),
+  ],
+  [
+    edge("brief", "draft"),
+    edge("draft", "x_post"),
+    edge("draft", "linkedin_post"),
+  ],
+);
+
 /** The Clerk feature slug a graph needs, or `undefined` when every node in it is unrestricted. */
 export function templateFeature(template: TemplateGraph): string | undefined {
   for (const entry of template.nodes) {
@@ -770,6 +812,8 @@ const CREDENTIAL_NAMES: Record<string, string> = {
   resend: "Resend",
   teams: "Microsoft Teams",
   stripe: "Stripe",
+  x: "X (Twitter)",
+  linkedin: "LinkedIn",
 };
 
 export function credentialName(credential: string): string {
@@ -886,6 +930,13 @@ export const WORKFLOW_TEMPLATES: readonly WorkflowTemplate[] = [
     "Batch work",
     "Run the same steps once per item in a list, then carry on once with a summary of the batch.",
     loopList,
+  ),
+  template(
+    "social-crossposter",
+    "Social cross-poster (X & LinkedIn)",
+    "Social",
+    "Draft social copy with AI and publish simultaneously to X (Twitter) and LinkedIn with zero Pro gating.",
+    socialCrossposter,
   ),
 ];
 
