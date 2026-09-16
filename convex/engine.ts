@@ -900,3 +900,223 @@ export const disarmSchedule = mutation({
     return null;
   },
 });
+
+/* -------------------------------------------------------------------------------------------------
+ * SuperAdmin Engine Queries & Mutations.
+ * ---------------------------------------------------------------------------------------------- */
+
+export const getAdminStats = query({
+  args: { secret: v.string() },
+  returns: v.any(),
+  handler: async (ctx, { secret }) => {
+    guard(secret);
+    const workflows = await ctx.db.query("workflows").collect();
+    const executions = await ctx.db.query("executions").collect();
+    const connections = await ctx.db.query("connections").collect();
+    const usage = await ctx.db.query("usage").collect();
+
+    const now = Date.now();
+    const oneDayAgo = now - 24 * 60 * 60 * 1000;
+    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+
+    const executions24h = executions.filter((e) => e.startedAt >= oneDayAgo);
+    const executions30d = executions.filter((e) => e.startedAt >= thirtyDaysAgo);
+
+    const failedExecutions = executions.filter((e) => e.status === "failed");
+    const failureRate = executions.length > 0 ? (failedExecutions.length / executions.length) * 100 : 0;
+
+    const orgIds = new Set<string>();
+    for (const w of workflows) orgIds.add(w.orgId);
+    for (const e of executions) orgIds.add(e.orgId);
+    for (const c of connections) orgIds.add(c.orgId);
+    for (const u of usage) orgIds.add(u.orgId);
+
+    const queuedCount = executions.filter((e) => e.status === "queued").length;
+    const runningCount = executions.filter((e) => e.status === "running").length;
+
+    return {
+      totalTenants: orgIds.size,
+      activeWorkflows: {
+        total: workflows.length,
+        published: workflows.filter((w) => w.status === "active").length,
+        draft: workflows.filter((w) => w.status === "draft").length,
+        paused: workflows.filter((w) => w.status === "paused").length,
+      },
+      executionVolume: {
+        last24h: executions24h.length,
+        last30d: executions30d.length,
+      },
+      globalFailureRate: Math.round(failureRate * 10) / 10,
+      redisQueueDepth: queuedCount,
+      activeWorkerConcurrency: runningCount,
+      maxWorkerCapacity: 200,
+    };
+  },
+});
+
+export const getAdminWorkflows = query({
+  args: { secret: v.string() },
+  returns: v.any(),
+  handler: async (ctx, { secret }) => {
+    guard(secret);
+    const workflows = await ctx.db.query("workflows").collect();
+    const executions = await ctx.db.query("executions").collect();
+
+    const now = Date.now();
+    const oneDayAgo = now - 24 * 60 * 60 * 1000;
+    const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+
+    return workflows.map((wf) => {
+      const wfExecs = executions.filter((e) => e.workflowId === wf._id);
+      const runs24h = wfExecs.filter((e) => e.startedAt >= oneDayAgo).length;
+      const runs30d = wfExecs.filter((e) => e.startedAt >= thirtyDaysAgo).length;
+      const failed = wfExecs.filter((e) => e.status === "failed").length;
+      const failureRate = wfExecs.length > 0 ? (failed / wfExecs.length) * 100 : 0;
+
+      let triggerType = "webhook";
+      const nodes = Array.isArray(wf.graph?.nodes) ? wf.graph.nodes : [];
+      const triggerNode = nodes.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (n: any) => n.data?.isTrigger || n.data?.nodeType?.includes("trigger"),
+      );
+      if (triggerNode) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const nodeType = (triggerNode as any).data?.nodeType ?? "";
+        if (nodeType.includes("telegram")) triggerType = "telegram";
+        else if (nodeType.includes("schedule")) triggerType = "schedule";
+        else if (nodeType.includes("form")) triggerType = "form";
+        else if (nodeType.includes("manual")) triggerType = "manual";
+        else if (nodeType.includes("chat")) triggerType = "chat";
+      }
+
+      return {
+        id: wf._id,
+        name: wf.name,
+        tenantId: wf.orgId,
+        ownerEmail: wf.createdBy,
+        triggerType,
+        status: wf.status,
+        version: wf.version,
+        nodesCount: nodes.length,
+        edgesCount: Array.isArray(wf.graph?.edges) ? wf.graph.edges.length : 0,
+        totalRuns24h: runs24h,
+        totalRuns30d: runs30d,
+        failureRate: Math.round(failureRate * 10) / 10,
+        lastEditedAt: wf.updatedAt,
+        graph: wf.graph,
+      };
+    });
+  },
+});
+
+export const setWorkflowStatusAdmin = mutation({
+  args: {
+    secret: v.string(),
+    workflowId: v.id("workflows"),
+    status: v.union(v.literal("active"), v.literal("paused"), v.literal("draft")),
+  },
+  returns: v.null(),
+  handler: async (ctx, { secret, workflowId, status }) => {
+    guard(secret);
+    const wf = await ctx.db.get(workflowId);
+    if (!wf) throw new ConvexError({ code: "not_found" });
+    await ctx.db.patch(workflowId, { status, updatedAt: Date.now() });
+    return null;
+  },
+});
+
+export const getAdminConnections = query({
+  args: { secret: v.string() },
+  returns: v.any(),
+  handler: async (ctx, { secret }) => {
+    guard(secret);
+    const connections = await ctx.db.query("connections").collect();
+    return connections.map((conn) => {
+      let status: "healthy" | "expired" | "invalid_scopes" | "reconnect_required" = "healthy";
+      if (conn.status === "needs_reconnect") status = "reconnect_required";
+      else if (conn.status === "revoked") status = "expired";
+      else if (conn.expiresAt && conn.expiresAt < Date.now()) status = "expired";
+
+      const expiresInDays = conn.expiresAt
+        ? Math.max(0, Math.round((conn.expiresAt - Date.now()) / (24 * 60 * 60 * 1000)))
+        : undefined;
+
+      return {
+        connectionId: conn._id,
+        tenantId: conn.orgId,
+        provider: conn.provider,
+        kind: conn.kind,
+        label: conn.label,
+        status,
+        lastVerifiedAt: conn.updatedAt,
+        expiresInDays,
+      };
+    });
+  },
+});
+
+export const getAdminExecutionsAndIncidents = query({
+  args: { secret: v.string() },
+  returns: v.any(),
+  handler: async (ctx, { secret }) => {
+    guard(secret);
+    const executions = await ctx.db.query("executions").order("desc").take(100);
+    const failedExecs = executions.filter((e) => e.status === "failed");
+
+    const incidents = [];
+    for (const fe of failedExecs.slice(0, 20)) {
+      const wf = await ctx.db.get(fe.workflowId);
+      const step = await ctx.db
+        .query("steps")
+        .withIndex("by_execution", (q) => q.eq("executionId", fe._id))
+        .filter((q) => q.eq(q.field("status"), "failed"))
+        .first();
+
+      let category: "external_outage" | "engine_timeout" | "user_logic_error" = "user_logic_error";
+      const errLower = (fe.error ?? "").toLowerCase();
+      if (errLower.includes("timeout") || errLower.includes("timed out")) {
+        category = "engine_timeout";
+      } else if (
+        errLower.includes("503") ||
+        errLower.includes("429") ||
+        errLower.includes("rate limit") ||
+        errLower.includes("network")
+      ) {
+        category = "external_outage";
+      }
+
+      incidents.push({
+        id: fe._id,
+        runHash: fe.runId ?? fe._id.slice(0, 10),
+        workflowId: fe.workflowId,
+        workflowName: wf?.name ?? "Workflow",
+        tenantId: fe.orgId,
+        tenantEmail: fe.startedBy ?? wf?.createdBy ?? "system@xuremi.io",
+        category,
+        errorMessage: fe.error ?? "Execution failed",
+        failedStepNodeId: step?.nodeId ?? "unknown_step",
+        failedStepNodeType: step?.nodeType ?? "node",
+        inputPayload: (step?.input as Record<string, unknown>) ?? (fe.trigger?.payload as Record<string, unknown>) ?? {},
+        outputPayload: step?.output as Record<string, unknown> | undefined,
+        startedAt: fe.startedAt,
+        latencyMs: (fe.finishedAt ?? fe.startedAt) - fe.startedAt,
+        retriesCount: step?.attempt ?? 1,
+        status: "failed" as const,
+      });
+    }
+
+    return {
+      recentExecutions: executions,
+      incidents,
+    };
+  },
+});
+
+export const getAdminUsage = query({
+  args: { secret: v.string() },
+  returns: v.any(),
+  handler: async (ctx, { secret }) => {
+    guard(secret);
+    return await ctx.db.query("usage").collect();
+  },
+});

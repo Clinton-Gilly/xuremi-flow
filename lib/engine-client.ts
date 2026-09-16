@@ -651,3 +651,45 @@ export function withTriggerSample(trigger: Trigger, graph: ReturnType<typeof toR
   }
   return trigger;
 }
+
+/* -------------------------------------------------------------------------------------------------
+ * SuperAdmin Engine Client Functions.
+ * ---------------------------------------------------------------------------------------------- */
+
+export async function getAdminStats() {
+  const { client, secret } = engineClient();
+  return await client.query(api.engine.getAdminStats, { secret });
+}
+
+export async function getAdminWorkflows() {
+  const { client, secret } = engineClient();
+  return await client.query(api.engine.getAdminWorkflows, { secret });
+}
+
+export async function setWorkflowStatusAdmin(args: {
+  workflowId: string;
+  status: "active" | "paused" | "draft";
+}): Promise<void> {
+  const { client, secret } = engineClient();
+  await client.mutation(api.engine.setWorkflowStatusAdmin, {
+    secret,
+    workflowId: args.workflowId as Id<"workflows">,
+    status: args.status,
+  });
+}
+
+export async function getAdminConnections() {
+  const { client, secret } = engineClient();
+  return await client.query(api.engine.getAdminConnections, { secret });
+}
+
+export async function getAdminExecutionsAndIncidents() {
+  const { client, secret } = engineClient();
+  return await client.query(api.engine.getAdminExecutionsAndIncidents, { secret });
+}
+
+export async function getAdminUsage() {
+  const { client, secret } = engineClient();
+  return await client.query(api.engine.getAdminUsage, { secret });
+}
+

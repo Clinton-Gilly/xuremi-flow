@@ -1,7 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { Header } from "@/components/app/Header";
 import { ConvexAuthGate } from "@/components/app/ConvexAuthGate";
+import { AdminAuthListener } from "@/components/admin/AdminAuthListener";
 
 export default async function AppLayout({
   children,
@@ -14,6 +16,9 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <Suspense fallback={null}>
+        <AdminAuthListener />
+      </Suspense>
       <Header />
       <main className="flex flex-1 flex-col">
         <ConvexAuthGate>{children}</ConvexAuthGate>
